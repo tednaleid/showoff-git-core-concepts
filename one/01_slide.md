@@ -70,9 +70,18 @@ uses scary terms that all sound dangerous:
 !SLIDE 
 # Git Core Concepts #
 
-!SLIDE center
+!SLIDE 
 git is a DAG (directed acyclic graph)
-![DAG](img/dag.png)
+
+<pre>
+                      E---F---G 
+                     /
+                A---B---C---D-----------K---L---M 
+                             \         /
+                              H---I---J
+                                           
+</pre>
+
 
 !SLIDE 
 DAG nodes each represent a commit object
@@ -264,11 +273,11 @@ merge commit of two branches
 
 !SLIDE 
 # branches #
-commits don't "belong to" branches, unlike other source control systems, there's nothing in the commit metadata about branches it belongs to
+commits don't "belong to" branches, there's nothing in the commit metadata about branches
 
 !SLIDE 
 # branches #
-a branch's commits are implied by the ancestry of the commit the branch points to
+a branch's commits are implied by the ancestry of the commit the branch points at
 
 <pre>
                                    feature
@@ -280,100 +289,267 @@ a branch's commits are implied by the ancestry of the commit the branch points t
                                   master
 </pre>
 
+<div class="smallercentered">
+<code>master</code> is <code>A..D</code> and <code>feature</code> is <code>A,B,E..G</code>
+</div>
 
-!SLIDE 
-the reflog is a log of recent branch movement, by default it contains two weeks of history
+!SLIDE
+# HEAD #
 
-!SLIDE 
-the reflog is unique to an instance of a repo, even if something has been gc in one repo it could still exist in another
+<code>HEAD</code> is the currently active commit and will be a parent of the next commit
+<pre>
+$ cat .git/HEAD
+ref: refs/heads/master
+</pre>
 
-!SLIDE 
-if nothing is pointing at a node, it's "dangling" (or "detached")
-
-!SLIDE 
-it is subject to garbage collection, but still exists till garbage collection removes it
-
-!SLIDE 
-git does a gc when the number of "dangling" objects hits a threshold, something like every 1000 commits 
-
-!SLIDE 
-you can have the courage to experiment as you can always get back
+<div class="smallercentered">
+most of the time it points to a branch, but can point directly to a SHA when "detatched"
+</div>
 
 
 !SLIDE 
-git reset [--soft|--hard] _SHA_
-- points HEAD & the current branch to the specified SHA (stop if --soft)
-- clean index, make it look like SHA (stop if default/--mixed)
-- clean working copy, make it look like SHA (--hard)
+# reflog #
+a log of recent <code>HEAD</code> movement
 
-(from: http://progit.org/2011/07/11/reset.html)
+<pre>
+$ git reflog                                       
+d72efc4 HEAD@{0}: commit: adding bar.txt
+6435f38 HEAD@{1}: commit (initial): adding foo.txt
+</pre>
+
+<pre>
+$ git commit -m "adding baz.txt"
+</pre>
+
+<pre>
+$ git reflog                                       
+b5416cb HEAD@{0}: commit: adding baz.txt
+d72efc4 HEAD@{1}: commit: adding bar.txt
+6435f38 HEAD@{2}: commit (initial): adding foo.txt
+</pre>
+
+
+<div class="smallercentered">
+by default it contains up to two weeks of history
+</div>
+
+!SLIDE 
+# reflog #
+the reflog is unique to a repo instance
+
+if a commit has been garbage collected it could still exist in a clone
+
+!SLIDE 
+# dangling commit #
+if nothing is pointing at a commit, it's "dangling"
+
+!SLIDE 
+# dangling commit #
+<pre>
+                    A---B---C---D---E---F
+                                        ↑
+                                      master
+</pre>
+
+<pre>
+$ git reset --hard SHA_OF_B
+</pre>
+
+<pre>
+                    A---B---C---D---E---F
+                        ↑
+                      master
+
+</pre>
+
+<div class="smallercentered">
+<code>C..F</code> are now dangling
+</div>
+
+!SLIDE 
+# dangling commit #
+
+but they will be safe for ~2 weeks because of the reflog
+
+<pre>
+                                     HEAD@{1}
+                                        ↓
+                    A---B---C---D---E---F
+                        ↑
+                      master
+
+</pre>
+
+<div class="smallestcentered">
+<code>HEAD@{1}</code> will become <code>HEAD@{2}</code>...<code>HEAD@{N}</code> as <code>HEAD</code> moves on in the reflog
+</div>
+
+!SLIDE 
+# garbage collection #
+once a dangling commit leaves the reflog, it is at risk of garbage collection
+
+!SLIDE 
+# garbage collection #
+git does a <code>gc</code> when the number of "dangling" objects hits a threshold
+
+<div class="smallestcentered">
+something like every 1000 commits 
+</div>
+
+!SLIDE 
+# garbage collection #
+to prevent garbage collection, just point something at it
+
+<pre>
+$ git tag mytag SHA_OF_C
+</pre>
+
+!SLIDE 
+you can have the courage to experiment as you can always get back to prior commits
 
 
 !SLIDE 
-git reset --hard HEAD - means clean out the working directory and any staged information, don't move the branch pointer
+# reset --soft #
+<pre>
+git reset --soft &lt;SHA&gt;
+</pre>
 
+1. moves <code>HEAD</code> & the current branch to the specified <code>&lt;SHA&gt;</code>
+2. index - unchanged
+3. working directory - unchanged
+
+<p/>
+<div class="smallestcentered">
+useful for easily squashing commits down into a single commit
+</div>
+
+!SLIDE 
+# reset (default)#
+<pre>
+git reset [--mixed] &lt;SHA&gt;
+</pre>
+
+1. moves <code>HEAD</code> & the current branch to the specified <code>&lt;SHA&gt;</code> 
+2. clean the index, make it look like <code>&lt;SHA&gt;</code> 
+3. working directory - unchanged
+
+<p/>
+<div class="smallestcentered">
+for more info, see: http://progit.org/2011/07/11/reset.html
+</div>
+
+!SLIDE 
+# reset --hard#
+<pre>
+git reset --hard &lt;SHA&gt;
+</pre>
+
+1. moves <code>HEAD</code> & the current branch to the specified <code>&lt;SHA&gt;</code> 
+2. clean the index, make it look like <code>&lt;SHA&gt;</code> 
+3. clean the working copy, make it look like <code>&lt;SHA&gt;</code> 
+
+<p/>
+<div class="smallestcentered">
+for more info, see: http://progit.org/2011/07/11/reset.html
+</div>
+
+!SLIDE 
+# reset --hard HEAD #
+<pre>
+git reset --hard HEAD
+</pre>
+
+<div class="smallercentered">
+just means clean out the working directory and any staged information, don't move the branch pointer
+</div>
+
+!SLIDE
 (git amend example)
 
 ("delete"/recover commits example)
 
 
 !SLIDE 
-git reset --soft SHA
+# rebasing #
 
-useful for easily squashing commits down into a single commit
-
-
-!SLIDE 
-# what is rebasing #
-
-To reapply a series of changes from a branch to a different base, and reset the head of that branch to the result.
+rebasing reapplies a series of changes to another parent commit, then resets the head of that branch to the result
 
 !SLIDE 
-private activity, should't be done on things that have been pushed publicly 
-
-!SLIDE
-public rebasing is bad because it creates partially redundant commit states and can't get to your node from theirs
-
-example
-
-!SLIDE
-if you want to clean things up, the alternative is to create another branch, rebase onto that and push it out
-
-
-!SLIDE 
-Assume the following history exists and the current branch is "topic":
+# rebasing #
 
 <pre>
-                         A---B---C topic
-                        /
-                    D---E---F---G master
+                                feature+HEAD
+                                      ↓
+                              E---F---G 
+                             /
+                        A---B---C---D 
+                                    ↑ 
+                                  master
 </pre>
 
-From this point, the result of either of the following commands:
-
+<pre>
    git rebase master
-   git rebase master topic
-
-would be:
+</pre>
 
 <pre>
-                         A'--B'--C' topic
-                        /
-           D---E---F---G master
+                                  (dangling)
+                                      ↓
+                              E---F---G
+                             /
+                        A---B---C---D---E'--F'--G'
+                                    ↑           ↑ 
+                                  master  feature+HEAD
 </pre>
 
 !SLIDE 
-# what is squashing #
+# rebasing #
+a private activity, should't be done on things that have been pushed publicly 
 
-<pre>
-git merge --squash
-</pre>
+!SLIDE
+# rebasing #
+public rebasing is bad because it creates redundant commits with different SHAs 
 
+git also has trouble moving remote branch pointers to follow a rebase
 
+!SLIDE
+# rebasing #
+if you want to clean things up, an alternative is to create another branch, rebase onto that and push it out
 
 !SLIDE 
-# what is fast forwarding #
+# squashing #
 
+Compresses unmerged commits down into a single commit and appends to the destination branch
+
+!SLIDE 
+# squashing #
+
+<pre>
+                                           feature
+                                              ↓
+                                      E---F---G 
+                                     /
+                        A---B---C---D 
+                                    ↑ 
+                               master+HEAD
+</pre>
+
+<pre>
+git merge --squash feature
+</pre>
+
+<pre>
+                                           feature
+                                              ↓
+                                      E---F---G 
+                                     /
+                        A---B---C---D---G' 
+                                        ↑ 
+                                   master+HEAD
+</pre>
+
+<div class="smallestcentered">
+squashing is used to clean up history, when the thinking behind <code>E..F</code> is unimportant
+</div>
 
 
 !SLIDE 

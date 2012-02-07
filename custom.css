@@ -70,6 +70,7 @@ code {
 
 li {
     font-size: 75%;
+    padding-top: 10px;
 }
 /*
 .content::after {
