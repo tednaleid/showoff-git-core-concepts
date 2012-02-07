@@ -20,18 +20,18 @@ history is add-only with eventual garbage collection on unreferenced commits
 !SLIDE center
 # git's the safest VCS I've used #
 
-![airtravel](img/airtravel.png)
+    ![airtravel](img/airtravel.png)
 
 
 !SLIDE center
 # you just have to understand a few things #
 
-![instrumentpanel](img/instrumentpanel.png)
+    ![instrumentpanel](img/instrumentpanel.png)
 
 !SLIDE center
 # if you don't…it gets ugly fast #
 
-![plane wreck](img/planewreck.png)
+    ![plane wreck](img/planewreck.png)
 
 !SLIDE 
 you need to throw away your preconceptions from other version control systems
@@ -118,10 +118,10 @@ you also can easily destroy uncommitted work, so commit early & often
 you cannot modify commits, only add new ones
 
 !SLIDE 
-garbage collection is the only truly destructive action in git
+garbage collection is the only truly destructive git action 
 
 !SLIDE 
-garbage collection will not destroy anything if something is pointing to it
+garbage collection will not destroy a commit if something is pointing to it
 
 !SLIDE 
 # four things point at commits #
@@ -137,7 +137,7 @@ the reflog
 !SLIDE 
 # child commits #
 
-point at 1..N parent nodes 
+point at 1..N parent commits 
 
 <pre>
                               E---F---G 
@@ -149,7 +149,7 @@ point at 1..N parent nodes
 
 !SLIDE 
 # tags #
-fixed node pointers
+fixed commit pointers
 
 <pre>
                         A---B---C 
@@ -171,7 +171,7 @@ $ git commit -m "adding stuff to C"
 !SLIDE 
 # branches #
 
-floating node pointers that move as you add commits
+floating commit pointers that move as you add commits
 
 <pre>
                         A---B
@@ -405,7 +405,13 @@ $ git tag mytag SHA_OF_C
 </pre>
 
 !SLIDE 
-you can have the courage to experiment as you can always get back to prior commits
+you should have courage to experiment 
+
+you can always get back to prior commits if something doesn't work
+
+
+!SLIDE
+# Git Command Tips #
 
 
 !SLIDE 
@@ -435,7 +441,7 @@ git reset [--mixed] &lt;SHA&gt;
 
 <p/>
 <div class="smallestcentered">
-for more info, see: http://progit.org/2011/07/11/reset.html
+<code>git reset HEAD</code> will unstage everything in the index
 </div>
 
 !SLIDE 
@@ -449,6 +455,9 @@ git reset --hard &lt;SHA&gt;
 3. clean the working copy, make it look like <code>&lt;SHA&gt;</code> 
 
 <p/>
+<div class="smallestcentered">
+dangerous if you have uncommitted changes, useful for undoing bad commits
+</div>
 <div class="smallestcentered">
 for more info, see: http://progit.org/2011/07/11/reset.html
 </div>
@@ -468,11 +477,12 @@ just means clean out the working directory and any staged information, don't mov
 
 ("delete"/recover commits example)
 
-
 !SLIDE 
 # rebasing #
 
-rebasing reapplies a series of changes to another parent commit, then resets the head of that branch to the result
+rebasing reapplies a series of changes to another parent commit
+
+it then resets the head of that branch to the result
 
 !SLIDE 
 # rebasing #
@@ -492,7 +502,7 @@ rebasing reapplies a series of changes to another parent commit, then resets the
 </pre>
 
 <pre>
-                                  (dangling)
+                        (dangling but still in reflog)
                                       ↓
                               E---F---G
                              /
@@ -553,39 +563,216 @@ squashing is used to clean up history, when the thinking behind <code>E..F</code
 
 
 !SLIDE 
-# what is cherry picking #
+# cherry picking #
+
+Apply the changes from an individual commit to the current branch
+
+<pre>
+                              E---F---G 
+                             /
+                        A---B---C---D 
+                                    ↑ 
+                               master+HEAD
+</pre>
+
+<pre>
+git cherry-pick SHA_OF_F
+</pre>
+
+<pre>
+                              E---F---G 
+                             /
+                        A---B---C---D---F' 
+                                        ↑ 
+                                   master+HEAD
+</pre>
 
 
 !SLIDE 
-# what is fetch vs pull #
+# fetch #
 
-Fetching a branch means to get the branch's head ref from a remote repository, to find out which objects are missing from the local object database, and to get them, too. 
+Fetching means to get the current branch's position in the remote repository, plus any missing commits, but don't move local references
 
+!SLIDE 
+# fetch #
+
+<pre>
+                     A---B---E---F   
+(origin)                         ↑ 
+                              master (local ref in remote repo)  
+
+
+                   origin/master
+                         ↓
+(local)              A---B---C---D 
+                                 ↑ 
+                              master+HEAD
+</pre>
+
+<pre>
+$ git fetch
+</pre>
+
+
+<pre>
+                         origin/master
+                               ↓
+                           E---F
+                          /
+(local)              A---B---C---D 
+                                 ↑ 
+                              master+HEAD
+</pre>
 
 
 !SLIDE 
-the right way to pull down changes from the server
+# pull #
 
-   - stash
-   - fetch - retrieve objects
+<code>pull</code> is <code>fetch</code> plus <code>merge</code>. It gets remote refs and commits and merges with your current head.
+
+!SLIDE 
+# pull #
+
+<pre>
+                     A---B---E---F   
+(origin)                         ↑ 
+                              master (local ref in remote repo)  
 
 
-git smart-pull is the git version of hg's fetch, git fetch+stash+(rebase -p || ff)+unstash…nice docs too
+                   origin/master
+                         ↓
+(local)              A---B---C---D 
+                                 ↑ 
+                              master+HEAD
+</pre>
+
+<pre>
+$ git pull
+</pre>
+
+
+<pre>
+                         origin/master
+                               ↓
+                           E---F----
+                          /         \
+(local)              A---B---C---D---G 
+                                     ↑ 
+                                  master+HEAD
+</pre>
+
+!SLIDE 
+the "right" way to pull down changes from the server
+
+1. <code>stash</code> any uncommitted changes (if any)
+2. <code>fetch</code> the latest refs and commits from origin
+3. <code>rebase -p</code> your changes (if any) onto origin's head
+4. else, just fast-forward your head to match origin's
+5. un-<code>stash</code> any previously stashed changes
+
+<p>
+<div class="smallercentered">
+<code>fetch</code> + <code>rebase</code> avoids unnecessary commits
+</div>
+
+!SLIDE
+Luckily, <code>git smart-pull</code> (part of the git-smart ruby gem) does all this for us
+
+<pre>
+gem install git-smart
+</pre>
+
+
+!SLIDE 
+# Useful Git Tools #
+
+!SLIDE center
+# Tower.app #
+
+<div class="smallestcentered">
+tip: cmd-click a branch to unselect it and see the whole tree
+</div>
+
+!SLIDE
+# Terminal #
+decorate your prompt with current branch & SHA
+
+ex: https://bitbucket.org/tednaleid/shared-zshrc/src/tip/zshrc_prompt
+
+!SLIDE
+# git aliases #
    
+<pre>
+[alias]
+  # nice one liner for status
+  st = status --short    
 
 
-!SLIDE 
-# Viewing tools #
+  # remove files from index
+  unstage = reset HEAD
+</pre>
 
-!SLIDE 
-tower
+<div class="smallestcentered">
+put these in your <code>~/.gitconfig</code>
+</div>
 
-   cmd-click branch to see whole tree (similar to omglog)
 
-   prompt with current branch & SHA
-   git status --short
-   omglog
-   git l (graph log)
-   git ld (graph with decorators only)
-   gbrt
-   unreachable commits
+!SLIDE
+# git aliases #
+   
+<pre>
+[alias]
+  # pretty ascii graph log format
+  l = log --graph --pretty='%Cred%h%Creset -%C(yellow)%d%Creset\
+          %s %Cblue[%an]%Creset %Cgreen(%cr)%Creset'\
+          --abbrev-commit --date=relative
+
+
+  # pretty log with all branches
+  la = !git l --all
+
+
+  # show just commits currently decorated by branch/tag pointers 
+  # really useful for high level picture
+  ld = !git l --all --simplify-by-decoration 
+</pre>
+
+<div class="smallestcentered">
+put these in your <code>~/.gitconfig</code>
+</div>
+
+
+!SLIDE
+# git aliases #
+   
+<pre>
+[alias]
+  # all commits unreachable via branch, tag, or child commit
+  # ignores the reflog 
+  # so it displays all commits in jeopardy of garbage collection
+  lost-commits = !"for SHA in $(git fsck --unreachable\ 
+                 --no-reflogs | grep commit |\
+                 cut -d\\  -f 3); do git log -n 1 $SHA; done"
+</pre>
+
+<div class="smallestcentered">
+put these in your <code>~/.gitconfig</code>
+</div>
+
+!SLIDE
+# omglog #
+
+OSX only…watches file system for changes &amp; auto updates ascii graph log
+
+<pre>
+gem install omglog
+</pre>
+
+<div class="smallestcentered">
+currently requires ruby 1.9.X
+</div>
+
+
+!SLIDE
+# Questions? #
+
