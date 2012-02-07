@@ -115,28 +115,171 @@ garbage collection is the only truly destructive action in git
 garbage collection will not destroy anything if something is pointing to it
 
 !SLIDE 
-four things point at nodes:
-- child nodes
-- tags 
-- branches 
-- the reflog
+# four things point at commits #
+
+child commits
+
+tags 
+
+branches 
+
+the reflog
 
 !SLIDE 
-child nodes point an N parent nodes (normally 1, or 2 for a merge)
+# child commits #
+
+point at 1..N parent nodes 
+
+<pre>
+                              E---F---G 
+                             /
+                        A---B---C---D 
+</pre>
+
+
 
 !SLIDE 
-tags are non-floating node pointers
+# tags #
+fixed node pointers
+
+<pre>
+                        A---B---C 
+                                ↑
+                           release_1.0
+</pre>
+
+<pre>
+$ git commit -m "adding stuff to C"
+</pre>
+
+<pre>
+                        A---B---C---D 
+                                ↑
+                           release_1.0
+</pre>
+
 
 !SLIDE 
-branches are floating node pointers that you can "reset" to move wherever you want
+# branches #
 
-- "remote" branches are just more pointers in your local repo that point to a node 
-- there is nothing really remote about them, they are the last known commits that a remote repo was pointing at
-- you can see all the branches under .git/refs/heads (local) and .git/refs/remotes (remote)
-- a branch is just a pointer to a commit
-- commits don't "belong to" branches, they're just commits that a branch might point at, but the branch pointer is easily moved
-- the rest of the branch is implied by the ancestry of that commit
-- unlike other source control systems, there's no metadata in the commit that says it's part of a branch
+floating node pointers that move as you add commits
+
+<pre>
+                        A---B
+                            ↑
+                          master
+</pre>
+
+<pre>
+$ git commit -m "adding stuff to B"
+</pre>
+
+<pre>
+                        A---B---C
+                                ↑
+                              master
+</pre>
+
+
+!SLIDE 
+# branches #
+
+they're just pointers, and are easy to move if you don't like where they are at
+<pre>
+                        A---B---C
+                                ↑
+                              master
+</pre>
+
+<pre>
+$ git reset --hard SHA_OF_B
+</pre>
+
+<pre>
+                        A---B---C
+                            ↑
+                          master
+</pre>
+
+<div class="smallercentered">
+commit <code>C</code> still exists and was not harmed by moving the pointer
+</div>
+<div class="smallestcentered">
+we'll talk more about <code>reset</code> in a bit
+</div>
+
+!SLIDE 
+# remote branches #
+"remote" branches are just pointers in your local repo
+
+<pre>
+                              origin/master
+                                    ↓
+                    A---B---C---D---E
+                            ↑       
+                          master    
+</pre>
+
+<div class="smallercentered">
+for most commands, there's nothing remote about them, they're just moved on a <code>fetch</code> or <code>pull</code>
+</div>
+
+!SLIDE 
+# branches #
+branches are in <code>.git/refs/heads</code> (local) and <code>.git/refs/remotes</code> (remote)
+
+<pre>
+$ ls -1 .git/refs/heads/**/*
+.git/refs/heads/master
+.git/refs/heads/my_feature_branch
+</pre>
+
+<pre>
+ls -1 .git/refs/remotes/**/*  
+.git/refs/remotes/origin/HEAD
+.git/refs/remotes/origin/master
+.git/refs/remotes/origin/my_feature_branch
+</pre>
+
+!SLIDE 
+# branches #
+
+All a branch object file contains is the SHA of the commit it's pointing at
+
+<pre>
+$ cat .git/refs/heads/master 
+0981e8c8ffbd3a1277dda1173fb6f5cbf4750d51
+</pre>
+
+<pre>
+$ git cat-file -p 0981e8c8ffbd3a1277dda1173fb6f5cbf4750d51
+tree 4fd7894316b4659ef3f53426166697858d51a291
+parent e324971ecf1e0f626d4ba8b0adfc22465091c100
+parent d33700dde6d38b051ba240ee97d685afdaf07515
+author Ted Naleid &lt;contact@naleid.com&gt; 1328567163 -0800
+committer Ted Naleid &lt;contact@naleid.com&gt; 1328567163 -0800
+
+merge commit of two branches
+</pre>
+
+!SLIDE 
+# branches #
+commits don't "belong to" branches, unlike other source control systems, there's nothing in the commit metadata about branches it belongs to
+
+!SLIDE 
+# branches #
+a branch's commits are implied by the ancestry of the commit the branch points to
+
+<pre>
+                                   feature
+                                      ↓
+                              E---F---G 
+                             /
+                        A---B---C---D 
+                                    ↑ 
+                                  master
+</pre>
+
 
 !SLIDE 
 the reflog is a log of recent branch movement, by default it contains two weeks of history
@@ -187,6 +330,15 @@ To reapply a series of changes from a branch to a different base, and reset the 
 
 !SLIDE 
 private activity, should't be done on things that have been pushed publicly 
+
+!SLIDE
+public rebasing is bad because it creates partially redundant commit states and can't get to your node from theirs
+
+example
+
+!SLIDE
+if you want to clean things up, the alternative is to create another branch, rebase onto that and push it out
+
 
 !SLIDE 
 Assume the following history exists and the current branch is "topic":
@@ -249,7 +401,11 @@ git smart-pull is the git version of hg's fetch, git fetch+stash+(rebase -p || f
 !SLIDE 
 # Viewing tools #
 
-   tower
+!SLIDE 
+tower
+
+   cmd-click branch to see whole tree (similar to omglog)
+
    prompt with current branch & SHA
    git status --short
    omglog
