@@ -1,6 +1,10 @@
 !SLIDE 
 # Git Core Concepts #
+<div class="smallercentered">
+or: how I learned to stop worrying and love the reflog
+</div>
 
+<p/>
 ### by Ted Naleid ###
 
 ### http://naleid.com ###
