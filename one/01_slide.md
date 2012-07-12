@@ -4,10 +4,11 @@
 or: how I learned to stop worrying and love the reflog
 </div>
 
-<p/>
-### by Ted Naleid ###
+### by <a href="naleid.com">Ted Naleid</a> ###
 
-### http://naleid.com ###
+<div class="smallestcentered shovedown">
+Presentation: <a href="http://tednaleid.github.com/showoff-git-core-concepts">tednaleid.github.com/showoff-git-core-concepts</a> 
+</div>
 
 !SLIDE 
 # tl;dr #
@@ -15,11 +16,13 @@ rewriting history is a lie
 
 !SLIDE 
 # tl;dr #
-git commits are immutable and cannot be "rewritten"
+git commits are immutable and cannot be &#8220;rewritten&#8221;
 
 !SLIDE 
 # tl;dr #
-history is add-only with eventual garbage collection on unreferenced commits
+you only add to history
+
+garbage collection removes unwanted commits weeks later
 
 !SLIDE center
 # git's the safest VCS I've used #
@@ -38,10 +41,7 @@ history is add-only with eventual garbage collection on unreferenced commits
     ![plane wreck](img/planewreck.png)
 
 !SLIDE 
-you need to throw away your preconceptions from other version control systems
-
-!SLIDE 
-git doesn't help by having a terrible UX
+git doesn't help by having _terrible_ UX
 
 !SLIDE 
 git mislabels things in confusing ways
@@ -54,10 +54,10 @@ git mislabels things in confusing ways
 git has hundreds of commands, but commonly used ones often require additional parameters
 
 !SLIDE 
-uses scary terms that all sound dangerous:
+git uses scary terms that all sound dangerous:
 
 <div class="centered smaller">
-<p>"rewrite history"</p>
+<p>&#8220;rewrite history&#8221;</p>
 
 <p>rebase</p> 
 
@@ -70,6 +70,8 @@ uses scary terms that all sound dangerous:
 <p>reflog</p>
 </div>
 
+!SLIDE 
+throw away your preconceptions from other version control systems
 
 !SLIDE 
 # Git Core Concepts #
@@ -88,17 +90,18 @@ git is a DAG (directed acyclic graph)
 
 
 !SLIDE 
-DAG nodes each represent a commit object
+DAG nodes each represent a commit
 
 !SLIDE 
-A commit object's SHA is derived from it's contents
+A commit is identified by a unique SHA
 
 <pre>
-$ git cat-file -p 561c944                         
+% git cat-file -p `cat .git/refs/heads/master`                         
 tree a5223bcfed6ed6c30c480c5467a9c09e6d87ba45
 parent 1dbdf0f43c1e90b4396ca2dd56054458dc45a590
-author Ted Naleid <contact@naleid.com> 1328481167 -0600
-committer Ted Naleid <contact@naleid.com> 1328481167 -0600
+author Ted Naleid &lt;contact@naleid.com&gt; 1328481167 -0600
+committer Ted Naleid &lt;contact@naleid.com&gt; 1328481167 -0600
+
 
 my special commit message
 </pre>
@@ -110,13 +113,8 @@ commits are completely immutable and are _impossible_ to accidentally destroy wi
 you can still <code>rm -rf yourrepo</code> and lose anything not yet pushed out
 </div>
 
-<div class="smallestcentered">
-you also can easily destroy uncommitted work, so commit early & often
-</div>
-
-!SLIDE 
-
-!SLIDE 
+!SLIDE
+uncommitted work is easily destroyed, so commit early &amp; often
 
 !SLIDE 
 you cannot modify commits, only add new ones
@@ -125,10 +123,10 @@ you cannot modify commits, only add new ones
 garbage collection is the only truly destructive git action 
 
 !SLIDE 
-garbage collection will not destroy a commit if something is pointing to it
+garbage collection only destroys commits with _nothing_ pointing at them
 
 !SLIDE 
-# four things point at commits #
+# what points at commits #
 
 child commits
 
@@ -153,7 +151,7 @@ point at 1..N parent commits
 
 !SLIDE 
 # tags #
-fixed commit pointers
+fixed pointers
 
 <pre>
                         A---B---C 
@@ -162,7 +160,7 @@ fixed commit pointers
 </pre>
 
 <pre>
-$ git commit -m "adding stuff to C"
+% git commit -m "adding stuff to C"
 </pre>
 
 <pre>
@@ -175,7 +173,7 @@ $ git commit -m "adding stuff to C"
 !SLIDE 
 # branches #
 
-floating commit pointers that move as you add commits
+floating pointers that move on commit
 
 <pre>
                         A---B
@@ -184,7 +182,7 @@ floating commit pointers that move as you add commits
 </pre>
 
 <pre>
-$ git commit -m "adding stuff to B"
+% git commit -m "adding stuff to B"
 </pre>
 
 <pre>
@@ -205,7 +203,7 @@ they're just pointers, and are easy to move if you don't like where they are at
 </pre>
 
 <pre>
-$ git reset --hard SHA_OF_B
+% git reset --hard SHA_OF_B
 </pre>
 
 <pre>
@@ -223,7 +221,7 @@ we'll talk more about <code>reset</code> in a bit
 
 !SLIDE 
 # remote branches #
-"remote" branches are just pointers in your local repo
+&#8220;remote&#8221; branches are just pointers in your local repo
 
 <pre>
                               origin/master
@@ -234,21 +232,21 @@ we'll talk more about <code>reset</code> in a bit
 </pre>
 
 <div class="smallercentered">
-for most commands, there's nothing remote about them, they're just moved on a <code>fetch</code> or <code>pull</code>
+for most commands, there's nothing remote about them...they're just moved on a <code>fetch</code> or <code>pull</code>
 </div>
 
 !SLIDE 
 # branches #
-branches are in <code>.git/refs/heads</code> (local) and <code>.git/refs/remotes</code> (remote)
+just text files in <code>.git/refs/heads</code> (local) and <code>.git/refs/remotes</code> (remote)
 
 <pre>
-$ ls -1 .git/refs/heads/**/*
+% ls -1 .git/refs/heads/**/*
 .git/refs/heads/master
 .git/refs/heads/my_feature_branch
 </pre>
 
 <pre>
-ls -1 .git/refs/remotes/**/*  
+% ls -1 .git/refs/remotes/**/*  
 .git/refs/remotes/origin/HEAD
 .git/refs/remotes/origin/master
 .git/refs/remotes/origin/my_feature_branch
@@ -257,15 +255,15 @@ ls -1 .git/refs/remotes/**/*
 !SLIDE 
 # branches #
 
-All a branch object file contains is the SHA of the commit it's pointing at
+branch text file contains is the SHA of the commit it's pointing at
 
 <pre>
-$ cat .git/refs/heads/master 
+% cat .git/refs/heads/master 
 0981e8c8ffbd3a1277dda1173fb6f5cbf4750d51
 </pre>
 
 <pre>
-$ git cat-file -p 0981e8c8ffbd3a1277dda1173fb6f5cbf4750d51
+% git cat-file -p 0981e8c8ffbd3a1277dda1173fb6f5cbf4750d51
 tree 4fd7894316b4659ef3f53426166697858d51a291
 parent e324971ecf1e0f626d4ba8b0adfc22465091c100
 parent d33700dde6d38b051ba240ee97d685afdaf07515
@@ -277,7 +275,7 @@ merge commit of two branches
 
 !SLIDE 
 # branches #
-commits don't "belong to" branches, there's nothing in the commit metadata about branches
+commits don't &#8220;belong to&#8221; branches, there's nothing in the commit metadata about branches
 
 !SLIDE 
 # branches #
@@ -294,39 +292,39 @@ a branch's commits are implied by the ancestry of the commit the branch points a
 </pre>
 
 <div class="smallercentered">
-<code>master</code> is <code>A..D</code> and <code>feature</code> is <code>A,B,E..G</code>
+<code>master</code> is <code>A-B-C-D</code> and <code>feature</code> is <code>A-B-E-F-G</code>
 </div>
 
 !SLIDE
 # HEAD #
 
-<code>HEAD</code> is the currently active commit and will be a parent of the next commit
+<code>HEAD</code> is the current commit that will be the parent of the next commit
 <pre>
-$ cat .git/HEAD
+% cat .git/HEAD
 ref: refs/heads/master
 </pre>
 
 <div class="smallercentered">
-most of the time it points to a branch, but can point directly to a SHA when "detatched"
+most of the time it points to a branch, but can point directly to a SHA when &#8220;detached&#8221;
 </div>
 
 
 !SLIDE 
-# reflog #
+# the reflog #
 a log of recent <code>HEAD</code> movement
 
 <pre>
-$ git reflog                                       
+% git reflog                                       
 d72efc4 HEAD@{0}: commit: adding bar.txt
 6435f38 HEAD@{1}: commit (initial): adding foo.txt
 </pre>
 
 <pre>
-$ git commit -m "adding baz.txt"
+% git commit -m "adding baz.txt"
 </pre>
 
 <pre>
-$ git reflog                                       
+% git reflog                                       
 b5416cb HEAD@{0}: commit: adding baz.txt
 d72efc4 HEAD@{1}: commit: adding bar.txt
 6435f38 HEAD@{2}: commit (initial): adding foo.txt
@@ -338,14 +336,14 @@ by default it contains up to two weeks of history
 </div>
 
 !SLIDE 
-# reflog #
-the reflog is unique to a repo instance
+# the reflog #
+unique to a repository instance
 
-if a commit has been garbage collected it could still exist in a clone
+a garbage collected commit can still exist in a clone
 
 !SLIDE 
 # dangling commit #
-if nothing is pointing at a commit, it's "dangling"
+if nothing is pointing at a commit, it's &#8220;dangling&#8221;
 
 !SLIDE 
 # dangling commit #
@@ -356,7 +354,7 @@ if nothing is pointing at a commit, it's "dangling"
 </pre>
 
 <pre>
-$ git reset --hard SHA_OF_B
+% git reset --hard SHA_OF_B
 </pre>
 
 <pre>
@@ -384,8 +382,8 @@ but they will be safe for ~2 weeks because of the reflog
 
 </pre>
 
-<div class="smallestcentered">
-<code>HEAD@{1}</code> will become <code>HEAD@{2}</code>...<code>HEAD@{N}</code> as <code>HEAD</code> moves on in the reflog
+<div class="smallercentered">
+<code>HEAD@{1}</code> will become <code>HEAD@{2}</code>..<code>HEAD@{N}</code> as refs are added to the reflog
 </div>
 
 !SLIDE 
@@ -394,7 +392,7 @@ once a dangling commit leaves the reflog, it is at risk of garbage collection
 
 !SLIDE 
 # garbage collection #
-git does a <code>gc</code> when the number of "dangling" objects hits a threshold
+git does a <code>gc</code> when the number of &#8220;dangling&#8221; objects hits a threshold
 
 <div class="smallestcentered">
 something like every 1000 commits 
@@ -402,16 +400,30 @@ something like every 1000 commits
 
 !SLIDE 
 # garbage collection #
-to prevent garbage collection, just point something at it
+to prevent garbage collecting a commit, just point something at it
 
 <pre>
-$ git tag mytag SHA_OF_C
+% git tag mytag SHA_OF_DANGLING_COMMIT
 </pre>
 
 !SLIDE 
 you should have courage to experiment 
 
-you can always get back to prior commits if something doesn't work
+you have _weeks_ to retrieve prior commits if something doesn't work
+
+!SLIDE
+
+# the index #
+
+a pre-commit staging area
+
+<div class="smallercentered">
+    <code>git add .</code> puts all changes in the index ready for commit
+</div>
+
+<div class="smallestcentered">
+    some ignore the index by committing directly with <code>git commit -a -m "msg"</code>
+</div>
 
 
 !SLIDE
@@ -429,9 +441,15 @@ git reset --soft &lt;SHA&gt;
 3. working directory - unchanged
 
 <p/>
-<div class="smallestcentered">
-useful for easily squashing commits down into a single commit
+<div class="smallercentered">
+useful for squashing the last few messy commits into one pristine commit
 </div>
+<pre>
+git reset --soft HEAD~3
+git commit -m "perfect code on the 'first' try"
+</pre>
+
+
 
 !SLIDE 
 # reset (default)#
@@ -444,7 +462,7 @@ git reset [--mixed] &lt;SHA&gt;
 3. working directory - unchanged
 
 <p/>
-<div class="smallestcentered">
+<div class="smallercentered">
 <code>git reset HEAD</code> will unstage everything in the index
 </div>
 
@@ -459,11 +477,8 @@ git reset --hard &lt;SHA&gt;
 3. clean the working copy, make it look like <code>&lt;SHA&gt;</code> 
 
 <p/>
-<div class="smallestcentered">
-dangerous if you have uncommitted changes, useful for undoing bad commits
-</div>
-<div class="smallestcentered">
-for more info, see: http://progit.org/2011/07/11/reset.html
+<div class="smallercentered">
+<span class="danger">dangerous</span> if you have <span class="danger">uncommitted work</span>, useful for undoing bad commits
 </div>
 
 !SLIDE 
@@ -476,17 +491,70 @@ git reset --hard HEAD
 just means clean out the working directory and any staged information, don't move the branch pointer
 </div>
 
-!SLIDE
-(git amend example)
+<div class="smallestcentered">
+for more info on <code>reset</code>, see: <a href="http://progit.org/2011/07/11/reset.html">http://progit.org/2011/07/11/reset.html</a>
+</div>
 
-("delete"/recover commits example)
+!SLIDE
+# commit --amend
+
+redo the last commit
+<pre>
+                        A---B---C
+                                ↑    
+                            master+HEAD
+</pre>
+
+<pre>
+git commit --amend -m "New commit message"
+</pre>
+<pre>
+                         master+HEAD
+                              ↓
+                              C'
+                             /
+                        A---B---C
+                                ↑    
+                  (dangling but still in reflog)
+</pre>
+
+
+!SLIDE
+# recovering commits
+<div class="smallercentered">
+Oops, I really wanted <code>C</code>!
+</div>
+<pre>
+                         master+HEAD
+                              ↓
+                              C'
+                             /
+                        A---B---C
+                                ↑    
+                            (dangling)
+</pre>
+<pre>
+git reflog  # find SHA_OF_C 
+git reset --hard SHA_OF_C
+</pre>
+<pre>
+                         (dangling)
+                              ↓
+                              C'
+                             /
+                        A---B---C
+                                ↑    
+                            master+HEAD
+</pre>
+
+
 
 !SLIDE 
 # rebasing #
 
-rebasing reapplies a series of changes to another parent commit
+reapplies a series of commits to a new parent commit
 
-it then resets the head of that branch to the result
+then moves the current branch pointer
 
 !SLIDE 
 # rebasing #
@@ -517,11 +585,11 @@ it then resets the head of that branch to the result
 
 !SLIDE 
 # rebasing #
-a private activity, should't be done on things that have been pushed publicly 
+a private activity, should never be done with commits that have been pushed
 
 !SLIDE
 # rebasing #
-public rebasing is bad because it creates redundant commits with different SHAs 
+rebasing public commits is bad because it creates redundant commits with new SHAs 
 
 git also has trouble moving remote branch pointers to follow a rebase
 
@@ -532,7 +600,7 @@ if you want to clean things up, an alternative is to create another branch, reba
 !SLIDE 
 # squashing #
 
-Compresses unmerged commits down into a single commit and appends to the destination branch
+compresses N commits into one commit that's appended to a destination branch
 
 !SLIDE 
 # squashing #
@@ -569,7 +637,7 @@ squashing is used to clean up history, when the thinking behind <code>E..F</code
 !SLIDE 
 # cherry picking #
 
-Apply the changes from an individual commit to the current branch
+apply a subset of changes from another branch
 
 <pre>
                               E---F---G 
@@ -595,7 +663,9 @@ git cherry-pick SHA_OF_F
 !SLIDE 
 # fetch #
 
-Fetching means to get the current branch's position in the remote repository, plus any missing commits, but don't move local references
+download new commits and update the remote branch pointer
+
+does not move any local references
 
 !SLIDE 
 # fetch #
@@ -614,7 +684,7 @@ Fetching means to get the current branch's position in the remote repository, pl
 </pre>
 
 <pre>
-$ git fetch
+% git fetch
 </pre>
 
 
@@ -632,7 +702,7 @@ $ git fetch
 !SLIDE 
 # pull #
 
-<code>pull</code> is <code>fetch</code> plus <code>merge</code>. It gets remote refs and commits and merges with your current head.
+<code>pull</code> is <code>fetch</code> plus <code>merge</code>
 
 !SLIDE 
 # pull #
@@ -651,7 +721,7 @@ $ git fetch
 </pre>
 
 <pre>
-$ git pull
+% git pull
 </pre>
 
 
@@ -691,17 +761,29 @@ gem install git-smart
 # Useful Git Tools #
 
 !SLIDE center
-# Tower.app #
+# Git Tower #
+
+Costs $ but totally worth it
 
 <div class="smallestcentered">
 tip: cmd-click a branch to unselect it and see the whole tree
 </div>
 
-!SLIDE
-# Terminal #
-decorate your prompt with current branch & SHA
+<div class="smallestcentered">
+OSX only, if you're on another platform, try <a href="http://www.atlassian.com/software/sourcetree/overview">Atlassian's free SourceTree</a>
+</div>
 
-ex: https://bitbucket.org/tednaleid/shared-zshrc/src/tip/zshrc_prompt
+!SLIDE center
+# Terminal Prompt #
+
+![enhanced prompt](img/enhanced-prompt.png)
+
+<div class="smallercentered">
+enhanced with branch &amp; SHA
+</div>
+<div class="smallestcentered">
+check out <a href="https://peepcode.com/blog/2012/my-command-line-prompt">peepcode</a>
+</div>
 
 !SLIDE
 # git aliases #
