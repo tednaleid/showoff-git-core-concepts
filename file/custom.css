@@ -15,13 +15,22 @@
     line-height: 105%;
 }
 
+a {
+    color:lightgreen;
+
+}
 
 h1, h2, h3, h4, h5 {
   font-family: kefa, futura, arial; 
+  text-align: center;
 }
 
 h1 {
     color: orange;
+}
+
+.danger {
+    color: orangered;
 }
 
 .small {
@@ -45,6 +54,10 @@ h1 {
     text-align: center;
 }
 
+.shovedown {
+    margin-top: 200px;
+}
+
 code {
     color: lightgreen;
     border: 1px solid #EAEAEA;
@@ -60,6 +73,10 @@ code {
     padding: 10px;
 }
 
+.ascii-art {
+    text-align: left;
+}
+
 .commandline code.command {
     color: #eee;
 }
@@ -72,11 +89,3 @@ li {
     font-size: 75%;
     padding-top: 10px;
 }
-/*
-.content::after {
-  position: absolute;
-  right: 120px;
-  bottom: 120px;
-  content: url(jay_small.png);
-}
-*/
