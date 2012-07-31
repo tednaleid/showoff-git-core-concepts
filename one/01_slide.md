@@ -4,7 +4,7 @@
 or: how I learned to stop worrying and love the reflog
 </div>
 
-### by <a href="naleid.com">Ted Naleid</a> ###
+### by <a href="http://naleid.com">Ted Naleid</a> ###
 
 <div class="smallestcentered shovedown">
 Presentation: <a href="http://tednaleid.github.com/showoff-git-core-concepts">tednaleid.github.com/showoff-git-core-concepts</a> 
