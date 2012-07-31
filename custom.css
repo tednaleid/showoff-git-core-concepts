@@ -73,6 +73,10 @@ code {
     padding: 10px;
 }
 
+.ascii-art {
+    text-align: left;
+}
+
 .commandline code.command {
     color: #eee;
 }

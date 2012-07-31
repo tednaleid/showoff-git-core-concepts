@@ -14,8 +14,6 @@ Presentation: <a href="http://tednaleid.github.com/showoff-git-core-concepts">te
 # tl;dr #
 rewriting history is a lie
 
-!SLIDE 
-# tl;dr #
 git commits are immutable and cannot be &#8220;rewritten&#8221;
 
 !SLIDE 
@@ -25,23 +23,45 @@ you only add to history
 garbage collection removes unwanted commits weeks later
 
 !SLIDE center
-# git's the safest VCS I've used #
+# git is the safest VCS I know #
 
-    ![airtravel](img/airtravel.png)
+<pre class="ascii-art">
 
+              ____
+              \   \__       ____
+               \   \/_______\___\_________
+                \/_/   o o o o o o o o o  `-..
+                 `-----------/~~~~/----------'
+                            /____/
+
+
+</pre>
 
 !SLIDE center
-# you just have to understand a few things #
+# if you know a few concepts #
 
-    ![instrumentpanel](img/instrumentpanel.png)
 
 !SLIDE center
 # if you don't…it gets ugly fast #
 
-    ![plane wreck](img/planewreck.png)
+<pre class="ascii-art">
+
+                     __.-^^---....,,-,
+                  _--                 \--_
+                 (                       ^)
+                 (                         )
+                  \._                   _./
+                     ``---\ ! ! , /---''
+                           |  |  |
+                        .--| ! ! |--.
+                        `==#######=='
+                           | !  !|
+                        ,-#########~,._
+
+</pre>
 
 !SLIDE 
-git doesn't help by having _terrible_ UX
+git doesn't help by having a _terrible_ user interface
 
 !SLIDE 
 git mislabels things in confusing ways
@@ -51,10 +71,10 @@ git mislabels things in confusing ways
 </div>
 
 !SLIDE 
-git has hundreds of commands, but commonly used ones often require additional parameters
+git has hundreds of commands, but commonly used ones require extra parameters
 
 !SLIDE 
-git uses scary terms that all sound dangerous:
+git uses dangerous-sounding terms:
 
 <div class="centered smaller">
 <p>&#8220;rewrite history&#8221;</p>
@@ -92,18 +112,30 @@ git is a DAG (directed acyclic graph)
 !SLIDE 
 DAG nodes each represent a commit
 
+<pre>
+                      E---F---G 
+                     /
+                A---B---C---D-----------K---L---M 
+                             \         /
+                              H---I---J
+                                           
+</pre>
+
+
 !SLIDE 
 A commit is identified by a unique SHA
 
 <pre>
-% git cat-file -p `cat .git/refs/heads/master`                         
-tree a5223bcfed6ed6c30c480c5467a9c09e6d87ba45
-parent 1dbdf0f43c1e90b4396ca2dd56054458dc45a590
-author Ted Naleid &lt;contact@naleid.com&gt; 1328481167 -0600
-committer Ted Naleid &lt;contact@naleid.com&gt; 1328481167 -0600
+% cat .git/refs/heads/master                  
+f643986c985998abd74076afe0247c81e0399512
 
+% git cat-file -p f643986 
+tree 392739b5a3de25773c163ae91191d3360811d302
+parent 94381141d087e9354b34ae76d2ab064a39b1cc69
+author Ted Naleid &lt;contact@naleid.com&gt; 1343694118 -0500
+committer Ted Naleid &lt;contact@naleid.com&gt; 1343698088 -0500
 
-my special commit message
+adding _amazing_ ascii art
 </pre>
 
 !SLIDE 
@@ -126,7 +158,7 @@ garbage collection is the only truly destructive git action
 garbage collection only destroys commits with _nothing_ pointing at them
 
 !SLIDE 
-# what points at commits #
+# what points at commits? #
 
 child commits
 
@@ -146,6 +178,11 @@ point at 1..N parent commits
                              /
                         A---B---C---D 
 </pre>
+
+<div class="smallercentered">
+most commonly 1 or 2 parent commits
+</div>
+
 
 
 
@@ -298,7 +335,7 @@ a branch's commits are implied by the ancestry of the commit the branch points a
 !SLIDE
 # HEAD #
 
-<code>HEAD</code> is the current commit that will be the parent of the next commit
+<code>HEAD</code> is the active commit that will be the parent of the next commit
 <pre>
 % cat .git/HEAD
 ref: refs/heads/master
@@ -343,7 +380,7 @@ a garbage collected commit can still exist in a clone
 
 !SLIDE 
 # dangling commit #
-if nothing is pointing at a commit, it's &#8220;dangling&#8221;
+if the only thing pointing to a commit is the reflog, it's &#8220;dangling&#8221;
 
 !SLIDE 
 # dangling commit #
@@ -374,7 +411,7 @@ if nothing is pointing at a commit, it's &#8220;dangling&#8221;
 but they will be safe for ~2 weeks because of the reflog
 
 <pre>
-                                     HEAD@{1}
+                                     HEAD@{0}
                                         ↓
                     A---B---C---D---E---F
                         ↑
@@ -383,16 +420,16 @@ but they will be safe for ~2 weeks because of the reflog
 </pre>
 
 <div class="smallercentered">
-<code>HEAD@{1}</code> will become <code>HEAD@{2}</code>..<code>HEAD@{N}</code> as refs are added to the reflog
+<code>HEAD@{0}</code> will become <code>HEAD@{1}</code>..<code>HEAD@{N}</code> as refs are added to the reflog
 </div>
 
 !SLIDE 
 # garbage collection #
-once a dangling commit leaves the reflog, it is at risk of garbage collection
+once a dangling commit leaves the reflog, it is &#8220;loose&#8221; and is at risk of garbage collection
 
 !SLIDE 
 # garbage collection #
-git does a <code>gc</code> when the number of &#8220;dangling&#8221; objects hits a threshold
+git does a <code>gc</code> when the number of &#8220;loose&#8221; objects hits a threshold
 
 <div class="smallestcentered">
 something like every 1000 commits 
@@ -422,7 +459,7 @@ a pre-commit staging area
 </div>
 
 <div class="smallestcentered">
-    some ignore the index by committing directly with <code>git commit -a -m "msg"</code>
+    some users bypass the index and commit directly with <code>git commit -a -m "msg"</code>
 </div>
 
 
@@ -432,23 +469,49 @@ a pre-commit staging area
 
 !SLIDE 
 # reset --soft #
-<pre>
-git reset --soft &lt;SHA&gt;
-</pre>
 
 1. moves <code>HEAD</code> & the current branch to the specified <code>&lt;SHA&gt;</code>
-2. index - unchanged
-3. working directory - unchanged
+2. index - unchanged 
+3. working directory - unchanged 
 
-<p/>
-<div class="smallercentered">
-useful for squashing the last few messy commits into one pristine commit
-</div>
 <pre>
-git reset --soft HEAD~3
+                    A---B---C---D---E
+                                    ↑
+                                  master
+</pre>
+<pre>
+git reset --soft SHA_OF_C
+</pre>
+<pre>
+                    working dir &amp; index still look like
+                                    ↓
+                    A---B---C---D---E
+                            ↑
+                          master
+</pre>
+
+
+!SLIDE 
+# reset --soft #
+
+useful for squashing the last few messy commits into one pristine commit
+<pre>
+                    working dir &amp; index still look like
+                                    ↓
+                    A---B---C---D---E
+                            ↑
+                          master
+</pre>
+
+<pre>
 git commit -m "perfect code on the 'first' try"
 </pre>
 
+<pre>
+                    A---B---C---E'
+                                ↑
+                              master
+</pre>
 
 
 !SLIDE 
@@ -461,7 +524,6 @@ git reset [--mixed] &lt;SHA&gt;
 2. clean the index, make it look like <code>&lt;SHA&gt;</code> 
 3. working directory - unchanged
 
-<p/>
 <div class="smallercentered">
 <code>git reset HEAD</code> will unstage everything in the index
 </div>
@@ -506,6 +568,7 @@ redo the last commit
 </pre>
 
 <pre>
+&lt;... change some files ... &gt;
 git commit --amend -m "New commit message"
 </pre>
 <pre>
@@ -590,8 +653,6 @@ a private activity, should never be done with commits that have been pushed
 !SLIDE
 # rebasing #
 rebasing public commits is bad because it creates redundant commits with new SHAs 
-
-git also has trouble moving remote branch pointers to follow a rebase
 
 !SLIDE
 # rebasing #
@@ -774,15 +835,15 @@ OSX only, if you're on another platform, try <a href="http://www.atlassian.com/s
 </div>
 
 !SLIDE center
-# Terminal Prompt #
+# Enhanced Shell Prompt #
 
 ![enhanced prompt](img/enhanced-prompt.png)
 
 <div class="smallercentered">
-enhanced with branch &amp; SHA
+decorated with branch &amp; SHA
 </div>
 <div class="smallestcentered">
-check out <a href="https://peepcode.com/blog/2012/my-command-line-prompt">peepcode</a>
+check out <a href="https://peepcode.com/blog/2012/my-command-line-prompt">"my command line prompt"</a> by peepcode
 </div>
 
 !SLIDE
@@ -834,11 +895,11 @@ put these in your <code>~/.gitconfig</code>
 <pre>
 [alias]
   # all commits unreachable via branch, tag, or child commit
-  # ignores the reflog 
+  # ignores anything pointed to by the reflog 
   # so it displays all commits in jeopardy of garbage collection
-  lost-commits = !"for SHA in $(git fsck --unreachable\ 
-                 --no-reflogs | grep commit |\
-                 cut -d\\  -f 3); do git log -n 1 $SHA; done"
+  loose-commits = !"for SHA in $(git fsck --unreachable\ 
+                  --no-reflogs | grep commit |\
+                  cut -d\\  -f 3); do git log -n 1 $SHA; done"
 </pre>
 
 <div class="smallestcentered">
