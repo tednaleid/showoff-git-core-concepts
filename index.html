@@ -579,11 +579,11 @@ by default it contains up to two weeks of history
 <p>but they will be safe for ~2 weeks because of the reflog</p>
 
 <pre>
-                                     HEAD@{0}
+                                     HEAD@{1}
                                         &#x2193;
                     A---B---C---D---E---F
                         &#x2191;
-                      master
+                     master (also HEAD@{0})
 
 </pre>
 
@@ -591,7 +591,7 @@ by default it contains up to two weeks of history
 
 
 <div class="smallercentered">
-<code>HEAD@{0}</code> will become <code>HEAD@{1}</code>..<code>HEAD@{N}</code> as refs are added to the reflog
+<code>HEAD@{1}</code> will become <code>HEAD@{2}</code>..<code>HEAD@{N}</code> as refs are added to the reflog
 </div>
 
 
