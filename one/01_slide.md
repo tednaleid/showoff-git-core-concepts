@@ -411,16 +411,16 @@ if the only thing pointing to a commit is the reflog, it's &#8220;dangling&#8221
 but they will be safe for ~2 weeks because of the reflog
 
 <pre>
-                                     HEAD@{0}
+                                     HEAD@{1}
                                         ↓
                     A---B---C---D---E---F
                         ↑
-                      master
+                     master (also HEAD@{0})
 
 </pre>
 
 <div class="smallercentered">
-<code>HEAD@{0}</code> will become <code>HEAD@{1}</code>..<code>HEAD@{N}</code> as refs are added to the reflog
+<code>HEAD@{1}</code> will become <code>HEAD@{2}</code>..<code>HEAD@{N}</code> as refs are added to the reflog
 </div>
 
 !SLIDE 
